@@ -19,7 +19,7 @@ RUN corepack enable && corepack prepare pnpm@9.7.0 --activate
 RUN pnpm install --frozen-lockfile
 
 # Construir los paquetes de Plane (web + api-server)
-RUN pnpm turbo run build --filter=@plane/api-server --filter=@plane/web
+RUN pnpm turbo run build --filter=@plane/api --filter=@plane/web
 
 # ---------------------------------------------------
 # Etapa 2: Ejecución
