@@ -1,52 +1,48 @@
-# ---------------------------------------------------
-# Etapa 1: Construcción (Turborepo + Next.js + API)
-# ---------------------------------------------------
-FROM node:22-alpine AS builder
+# =========================
+# Etapa 1: Build
+# =========================
+FROM node:18-alpine AS builder
 
-# Instala dependencias del sistema necesarias
-RUN apk add --no-cache bash libc6-compat python3 make g++
+# Instalar pnpm
+RUN npm install -g pnpm
 
-# Establecer el directorio de trabajo
-WORKDIR /app/apps
-
-# Copiar todos los archivos del repositorio
-COPY . .
-
-# Habilitar pnpm (usado por Plane)
-RUN corepack enable && corepack prepare pnpm@9.7.0 --activate
-
-# Instalar dependencias usando pnpm
-RUN pnpm install --frozen-lockfile
-
-# Construir los paquetes de Plane (web + api-server)
-RUN pnpm turbo run build --filter=plane-api --filter=web
-
-# ---------------------------------------------------
-# Etapa 2: Ejecución
-# ---------------------------------------------------
-FROM node:22-alpine AS runner
-
-# Crear usuario sin privilegios (recomendado por seguridad)
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Establecer directorio de trabajo
+# Crear directorio de trabajo
 WORKDIR /app
 
-# Copiar artefactos desde la etapa builder
-COPY --from=builder /app/apps/api ./apps/api
-COPY --from=builder /app/apps/web ./apps/web
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/node_modules ./node_modules
+# Copiar todos los archivos del monorepo
+COPY . .
 
-# Variables de entorno
+# Instalar dependencias del monorepo
+RUN pnpm install --frozen-lockfile
+
+# Compilar solo los paquetes necesarios
+RUN pnpm turbo run build --filter=api-server --filter=web
+
+# =========================
+# Etapa 2: Runtime
+# =========================
+FROM node:18-alpine AS runner
+
+# Instalar pnpm
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+# Copiar los paquetes ya compilados desde el builder
+COPY --from=builder /app ./
+
+# Configurar variable de entorno (Render la sobreescribe si la defines en el dashboard)
 ENV NODE_ENV=production
-ENV PORT=10000
+ENV PORT=3000
 
-# Exponer el puerto para Render
-EXPOSE 10000
+# Puerto que expondrá Render (ajusta según el tipo de servicio)
+EXPOSE 3000
 
-# Cambiar a usuario sin privilegios
-USER appuser
+# =========================
+# Selección del servicio
+# =========================
+# Si estás creando un servicio API:
+# CMD ["pnpm", "--filter", "api-server", "start"]
 
-# Comando de inicio del backend (API)
-CMD ["node", "apps/api/dist/main.js"]
+# Si estás creando el servicio Web (Next.js frontend):
+CMD ["pnpm", "--filter", "web", "start"]
