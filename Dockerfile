@@ -18,8 +18,7 @@ RUN corepack enable && corepack prepare pnpm@9.7.0 --activate
 RUN pnpm install --frozen-lockfile
 
 # Construir los paquetes necesarios (Server y Client)
-RUN pnpm turbo run build --filter=@plane/server --filter=@plane/client
-
+RUN pnpm turbo run build --filter=api --filter=web
 # ---------------------------------------------------
 # Etapa 2: Ejecución
 # ---------------------------------------------------
