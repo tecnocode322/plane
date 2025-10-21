@@ -7,7 +7,7 @@ FROM node:22-alpine AS builder
 RUN apk add --no-cache bash libc6-compat python3 make g++
 
 # Establecer el directorio de trabajo
-WORKDIR /app
+WORKDIR /app/apps
 
 # Copiar todos los archivos del repositorio
 COPY . .
