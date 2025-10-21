@@ -6,7 +6,7 @@ FROM node:22-alpine AS builder
 # Instala dependencias del sistema necesarias
 RUN apk add --no-cache bash libc6-compat python3 make g++
 
-WORKDIR /app
+WORKDIR /apps
 
 # Copiar todos los archivos
 COPY . .
@@ -18,7 +18,7 @@ RUN corepack enable && corepack prepare pnpm@9.7.0 --activate
 RUN pnpm install --frozen-lockfile
 
 # Construir los paquetes necesarios (Server y Client)
-RUN pnpm turbo run build --filter=apps/api --filter=apps/web
+RUN pnpm turbo run build --filter=api --filter=web
 # ---------------------------------------------------
 # Etapa 2: Ejecución
 # ---------------------------------------------------
