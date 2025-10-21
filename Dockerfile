@@ -3,39 +3,48 @@
 # ---------------------------------------------------
 FROM node:22-alpine AS builder
 
+# Instala dependencias del sistema necesarias
+RUN apk add --no-cache bash libc6-compat python3 make g++
+
 WORKDIR /app
 
-# Copiamos los archivos de configuración del monorepo
+# Copiar todos los archivos
 COPY . .
 
-# Instalar pnpm (usado por Plane)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Habilitar pnpm (usado por Plane)
+RUN corepack enable && corepack prepare pnpm@9.7.0 --activate
 
-# Instalar dependencias con pnpm
+# Instalar dependencias usando pnpm
 RUN pnpm install --frozen-lockfile
 
-# Construir todos los paquetes (API y Web)
-RUN pnpm turbo run build --filter=@plane/web --filter=@plane/api-server
+# Construir los paquetes necesarios (API y Web)
+RUN pnpm turbo run build --filter=@plane/api-server --filter=@plane/web
 
 # ---------------------------------------------------
-# Etapa 2: Imagen final de ejecución
+# Etapa 2: Ejecución
 # ---------------------------------------------------
 FROM node:22-alpine AS runner
 
+# Crear usuario sin privilegios (Render recomienda no usar root)
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
-# Copiamos los artefactos del builder
-COPY --from=builder /app/apps/web ./apps/web
+# Copiar artefactos del builder
 COPY --from=builder /app/apps/api ./apps/api
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/web ./apps/web
 COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/node_modules ./node_modules
 
-# Variables de entorno obligatorias
+# Variables de entorno
 ENV NODE_ENV=production
 ENV PORT=10000
 
-# Exponemos el puerto que Render usará
+# Puerto para Render
 EXPOSE 10000
 
-# Comando de inicio (puedes ajustar según backend o frontend)
+# Cambiar a usuario sin privilegios
+USER appuser
+
+# Comando de inicio del backend de Plane
 CMD ["node", "apps/api/dist/main.js"]
