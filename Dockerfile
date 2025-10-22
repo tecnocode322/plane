@@ -57,5 +57,5 @@ CMD sh -c 'if [ "$SERVICE" = "api" ]; then \
       node apps/api/dist/main.js; \
     else \
       echo "🌐 Iniciando Plane Web (Next.js)..."; \
-      pnpm --filter web start; \
+      node apps/web/.next/standalone/server.js; \
     fi'
