@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: plane-api
+    env: docker
+    plan: free
+    envVars:
+      - key: SERVICE
+        value: api
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+
+  - type: web
+    name: plane-web
+    env: docker
+    plan: free
+    envVars:
+      - key: SERVICE
+        value: web
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
