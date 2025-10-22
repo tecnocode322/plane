@@ -10,7 +10,8 @@ WORKDIR /app
 COPY . .
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm turbo run build --filter=plane-api --filter=web
+#RUN pnpm turbo run build --filter=plane-api --filter=web
+RUN pnpm turbo run build --filter=web && cd apps/api && pnpm exec tsc -p tsconfig.build.json
 
 # =========================
 # Etapa 2: Runtime
