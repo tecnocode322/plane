@@ -3,8 +3,11 @@
 # =========================
 FROM node:18-alpine AS builder
 
-# Instalar pnpm
-RUN npm install -g pnpm
+# Instalar dependencias del sistema necesarias (por si algún paquete las requiere)
+RUN apk add --no-cache bash libc6-compat python3 make g++
+
+# Instalar pnpm y turbo globalmente
+RUN npm install -g pnpm turbo
 
 # Crear directorio de trabajo
 WORKDIR /app
@@ -18,31 +21,30 @@ RUN pnpm install --frozen-lockfile
 # Compilar solo los paquetes necesarios
 RUN pnpm turbo run build --filter=plane-api --filter=web
 
+
 # =========================
 # Etapa 2: Runtime
 # =========================
 FROM node:18-alpine AS runner
 
-# Instalar pnpm
-RUN npm install -g pnpm
-
+# Crear directorio de trabajo
 WORKDIR /app
 
-# Copiar los paquetes ya compilados desde el builder
-COPY --from=builder /app ./
+# Copiar los artefactos compilados desde el builder
+COPY --from=builder /app .
 
-# Configurar variable de entorno (Render la sobreescribe si la defines en el dashboard)
+# Variables de entorno
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Puerto que expondrá Render (ajusta según el tipo de servicio)
+# Exponer puerto (Render detecta este puerto para hacer health check)
 EXPOSE 3000
 
 # =========================
-# Selección del servicio
+# Comando de inicio
 # =========================
-# Si estás creando un servicio API:
-# CMD ["pnpm", "--filter", "api-server", "start"]
+# Si tu servicio en Render será el BACKEND (Plane API)
+# CMD ["node", "apps/api/dist/main.js"]
 
-# Si estás creando el servicio Web (Next.js frontend):
+# Si tu servicio será el FRONTEND (Next.js)
 CMD ["pnpm", "--filter", "web", "start"]
