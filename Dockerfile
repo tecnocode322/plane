@@ -27,6 +27,9 @@ RUN pnpm turbo run build --filter=plane-api --filter=web
 # =========================
 FROM node:22-alpine AS runner
 
+# Instalar pnpm globalmente (para ejecutar scripts del monorepo)
+RUN npm install -g pnpm
+
 # Crear directorio de trabajo
 WORKDIR /app
 
@@ -36,15 +39,23 @@ COPY --from=builder /app .
 # Variables de entorno
 ENV NODE_ENV=production
 ENV PORT=3000
-
-# Exponer puerto (Render detecta este puerto para hacer health check)
 EXPOSE 3000
 
 # =========================
-# Comando de inicio
+# Comando de inicio dinámico
 # =========================
-# Si tu servicio en Render será el BACKEND (Plane API)
-# CMD ["node", "apps/api/dist/main.js"]
-
-# Si tu servicio será el FRONTEND (Next.js)
-CMD ["pnpm", "--filter", "web", "start"]
+# Render usará la variable SERVICE para decidir qué iniciar:
+#  - SERVICE=api  → ejecuta Plane API
+#  - SERVICE=web  → ejecuta el frontend Next.js
+#
+# Ejemplo:
+#   En Render > Environment > Add variable → SERVICE=api  (para backend)
+#   o SERVICE=web  (para frontend)
+#
+CMD sh -c 'if [ "$SERVICE" = "api" ]; then \
+      echo "🚀 Iniciando Plane API..."; \
+      node apps/api/dist/main.js; \
+    else \
+      echo "🌐 Iniciando Plane Web (Next.js)..."; \
+      pnpm --filter web start; \
+    fi'
