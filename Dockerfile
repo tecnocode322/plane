@@ -16,7 +16,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 
 # Compilar solo los paquetes necesarios
-RUN pnpm turbo run build --filter=api-server --filter=web
+RUN pnpm turbo run build --filter=plane-api --filter=web
 
 # =========================
 # Etapa 2: Runtime
