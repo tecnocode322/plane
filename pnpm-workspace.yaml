@@ -1,8 +1,8 @@
 packages:
 - apps/*
 - packages/*
-- "!apps/api"
-- "!apps/proxy"
+#- "!apps/api"
+#- "!apps/proxy"
 
 catalog:
   "@atlaskit/pragmatic-drag-and-drop": 1.7.4
