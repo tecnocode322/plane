@@ -1,7 +1,7 @@
 # =========================
 # Etapa 1: Build
 # =========================
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Instalar dependencias del sistema necesarias (por si algún paquete las requiere)
 RUN apk add --no-cache bash libc6-compat python3 make g++
@@ -25,7 +25,7 @@ RUN pnpm turbo run build --filter=plane-api --filter=web
 # =========================
 # Etapa 2: Runtime
 # =========================
-FROM node:18-alpine AS runner
+FROM node:22-alpine AS runner
 
 # Crear directorio de trabajo
 WORKDIR /app
