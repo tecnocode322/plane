@@ -47,4 +47,5 @@ EXPOSE 3000
 # CMD ["node", "apps/api/dist/main.js"]
 
 # Si tu servicio será el FRONTEND (Next.js)
-CMD ["pnpm", "--filter", "web", "start"]
+#CMD ["pnpm", "--filter", "web", "start"]
+CMD ["node", "apps/api/dist/main.js"]
