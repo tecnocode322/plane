@@ -1,4 +1,4 @@
-# =========================
+# ========================= 
 # Etapa 1: Build
 # =========================
 FROM node:22-alpine AS builder
@@ -57,5 +57,5 @@ CMD sh -c 'if [ "$SERVICE" = "api" ]; then \
       node apps/api/dist/main.js; \
     else \
       echo "🌐 Iniciando Plane Web (Next.js)..."; \
-      node apps/web/.next/standalone/server.js; \
+      pnpm --filter web start; \
     fi'
